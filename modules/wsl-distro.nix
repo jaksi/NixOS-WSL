@@ -144,14 +144,18 @@ in
     # dhcp is handled by windows
     networking.dhcpcd.enable = false;
 
-    users.users.${cfg.defaultUser} = {
-      isNormalUser = true;
-      uid = 1000;
-      extraGroups = [ "wheel" ]; # Allow the default user to use sudo
+    users.users = if cfg.defaultUser == "root" then {
+      # Otherwise WSL fails to login as root with "initgroups failed 5"
+      root.extraGroups = [ "root" ];
+    } else {
+      ${cfg.defaultUser} = {
+        isNormalUser = true;
+        uid = 1000;
+        extraGroups = [ "wheel" ]; # Allow the default user to use sudo
+      };
+      # Otherwise WSL fails to login as root with "initgroups failed 5"
+      root.extraGroups = [ "root" ];
     };
-
-    # Otherwise WSL fails to login as root with "initgroups failed 5"
-    users.users.root.extraGroups = [ "root" ];
 
     powerManagement.enable = false;
 
